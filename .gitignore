@@ -1,0 +1,14 @@
+env/
+venv/
+.env
+.credentials
+
+__pycache__
+*.pyc
+*.pyo
+
+sandbox/
+.vscode/
+.pylint
+
+.DS_Store
