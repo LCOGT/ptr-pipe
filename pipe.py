@@ -17,7 +17,7 @@ import json
 import shelve
 import time
 from pathlib import Path
-
+import socket
 import requests
 import traceback
 
@@ -251,6 +251,7 @@ class PipeAgent:
        
         pipe = self.config['pipe_name']  
         
+        pipeline_ip = requests.get('https://checkip.amazonaws.com').text.strip()
         
         # pipe Settings
         if time.time() > self.pipe_settings_upload_timer + self.pipe_settings_upload_period:
@@ -258,6 +259,7 @@ class PipeAgent:
 
             status = {}
             status['pipe_settings']={}
+            status['pipe_settings']['pipeline_ip']=pipeline_ip
             
             lane = "pipe_settings"
             try:                
