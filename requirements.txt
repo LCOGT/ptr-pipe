@@ -31,7 +31,7 @@ multidict==6.0.2
 networkx==2.8.6
 numpy==1.23.4
 ocs-ingester
-Pillow==9.2.0
+Pillow==10.0.1
 pycparser==2.21
 pycryptodome
 pyparsing==3.0.9
