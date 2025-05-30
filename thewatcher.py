@@ -454,7 +454,7 @@ def main():
         pipeid = 'aropipe'
      
         # link to github directory with latest pipeline file
-        EVA_py_directory= '/home/aropipeline/PycharmProjects/ptrpipeline/'
+        EVA_py_directory= '/home/aropipeline/PycharmProjects/EVA_Pipeline/'
         ingester_directory= '/mnt/PipeArchive/Ingestion/'
         failed_ingestion_directory= '/mnt/PipeArchive/FailedIngestion/'
         
@@ -468,7 +468,7 @@ def main():
         pipeid = 'mrcpipe'
      
         # link to github directory with latest pipeline file
-        EVA_py_directory= '/home/mrcpipeline/PycharmProjects/ptrpipeline/'
+        EVA_py_directory= '/home/mrcpipeline/PycharmProjects/EVA_Pipeline/'
         ingester_directory= '/archive/Ingestion/'
         failed_ingestion_directory= '/archive/FailedIngestion/'
         
@@ -485,7 +485,7 @@ def main():
         pipeid = 'ecopipe'
      
         # link to github directory with latest pipeline file
-        EVA_py_directory= '/home/ecopipeline/PycharmProjects/ptrpipeline/'
+        EVA_py_directory= '/home/ecopipeline/PycharmProjects/EVA_Pipeline/'
         ingester_directory= '/mnt/PipeArchive/Ingestion/'
         failed_ingestion_directory= '/mnt/PipeArchive/FailedIngestion/'
                 
