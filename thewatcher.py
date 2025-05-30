@@ -402,7 +402,7 @@ def launch_eva_pipeline(token: str,
     # 4) Copy pipeline code & resources
     shutil.copy(os.path.join(EVA_py_directory, 'EVApipeline.py'),
                 token_temp_directory)
-    shutil.copy(os.path.join(EVA_py_directory, 'archive_file_input_classes.py'),
+    shutil.copy(os.path.join(EVA_py_directory, 'modules/archive_file_input_classes.py'),
                 token_temp_directory)
     shutil.copytree(os.path.join(EVA_py_directory, 'modules'),
                     os.path.join(token_temp_directory, 'modules'),
