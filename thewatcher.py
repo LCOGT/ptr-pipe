@@ -368,7 +368,7 @@ def launch_eva_pipeline(token: str,
                         site_name: str):
     """
     Prepare a per-token temp dir, dump info_for_EVA.json, copy code, write a runner script,
-    and launch EVApipeline_fresh.py in its own process group.
+    and launch EVApipeline.py in its own process group.
     Returns (subprocess.Popen, info_for_EVA dict).
     """
     # Build & clean temp dir
@@ -400,7 +400,7 @@ def launch_eva_pipeline(token: str,
         json.dump(info_for_EVA, f, indent=2)
 
     # 4) Copy pipeline code & resources
-    shutil.copy(os.path.join(EVA_py_directory, 'EVApipeline_fresh.py'),
+    shutil.copy(os.path.join(EVA_py_directory, 'EVApipeline.py'),
                 token_temp_directory)
     shutil.copy(os.path.join(EVA_py_directory, 'archive_file_input_classes.py'),
                 token_temp_directory)
@@ -417,7 +417,7 @@ def launch_eva_pipeline(token: str,
         f.write('#!/bin/bash\n')
         if site_name != 'eco':
             f.write('source ~/.bash_profile\n')
-        f.write('/usr/bin/python3 EVApipeline_fresh.py na na generic na na na '+str(pipeid)+' >> log.txt\n')
+        f.write('/usr/bin/python3 EVApipeline.py na na generic na na na '+str(pipeid)+' >> log.txt\n')
     os.chmod(runner_path, 0o755)
     
     popen = subprocess.Popen(
