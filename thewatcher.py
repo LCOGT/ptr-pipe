@@ -420,9 +420,6 @@ def launch_eva_pipeline(token: str,
         f.write('/usr/bin/python3 EVApipeline.py na na generic na na na '+str(pipeid)+' >> log.txt\n')
     os.chmod(runner_path, 0o755)
     
-    print ("One round at a time.")
-    breakpoint()
-    
     popen = subprocess.Popen(
         ["/bin/bash", runner_path],
         cwd=token_temp_directory,
@@ -673,7 +670,6 @@ def main():
             except:
                 print ("Hit a snag somewhere? ")
                 print(traceback.format_exc())
-                breakpoint()
                                 
         process_ingester_directory(ingester_directory,failed_ingestion_directory)
         
