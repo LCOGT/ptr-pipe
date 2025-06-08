@@ -388,7 +388,7 @@ def launch_eva_pipeline(token: str,
         'telescope': parts[0],
         'camera_name': parts[1].split('_')[0],
         'is_osc': 'mono',
-        'pipeid': pipeid,
+        'pipeid': evapipeid,
         'token_temp_directory': token_temp_directory,
         'original_token_file': token,
         'file_location_expected': 'ptrarchive'
@@ -417,7 +417,7 @@ def launch_eva_pipeline(token: str,
         f.write('#!/bin/bash\n')
         if site_name != 'eco':
             f.write('source ~/.bash_profile\n')
-        f.write('/usr/bin/python3 EVApipeline.py na na generic na na na '+str(pipeid)+' >> log.txt\n')
+        f.write('/usr/bin/python3 EVApipeline.py na na generic na na na '+str(evapipeid)+' >> log.txt\n')
     os.chmod(runner_path, 0o755)
     
     popen = subprocess.Popen(
@@ -434,45 +434,50 @@ def launch_eva_pipeline(token: str,
 def main():
 
     # Expand '~' to the user's home directory
-    home_directory = os.path.expanduser("~")
+    # home_directory = os.path.expanduser("~")
 
-    # Use the expanded path in glob
-    files = glob.glob(f"{home_directory}/watcher*")
+    # # Use the expanded path in glob
+    # files = glob.glob(f"{home_directory}/watcher*")
 
-    site_name=files[0].split('_')[-1]
+    # site_name=files[0].split('_')[-1]
+
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+    
+    pipe_id = config['pipe_id'] 
 
     pipe_queue_timer=time.time() - 300
 
-    if site_name=='aro':
+    if pipe_id=='arolinux':
         with open('/home/aropipeline/.bash_profile') as f:
             lines = f.readlines()
         
-        archive_base_directory = '/mnt/PipeArchive'
+        archive_base_directory = '/archive'
         
         #Which pipe is this running on
         # Makes a different to the EVA settings
-        pipeid = 'aropipe'
+        evapipeid = 'aropipe'
      
         # link to github directory with latest pipeline file
-        EVA_py_directory= '/home/aropipeline/PycharmProjects/EVA_Pipeline/'
-        ingester_directory= '/mnt/PipeArchive/Ingestion/'
-        failed_ingestion_directory= '/mnt/PipeArchive/FailedIngestion/'
+        EVA_py_directory= '/home/aropipeline/Documents/Github/EVA_Pipeline/'
+        ingester_directory= '/archive/Ingestion/'
+        failed_ingestion_directory= '/archive/FailedIngestion/'
         
-    elif site_name=='mrc':
+    elif pipe_id=='mrc':
         with open('/home/mrcpipeline/.bash_profile') as f:
             lines = f.readlines()
         
         archive_base_directory = '/archive'
         #Which pipe is this running on
         # Makes a different to the EVA settings
-        pipeid = 'mrcpipe'
+        evapipeid = 'mrcpipe'
      
         # link to github directory with latest pipeline file
         EVA_py_directory= '/home/mrcpipeline/PycharmProjects/EVA_Pipeline/'
         ingester_directory= '/archive/Ingestion/'
         failed_ingestion_directory= '/archive/FailedIngestion/'
         
-    elif site_name=='eco':
+    elif pipe_id=='eco':
         try: 
             with open('/home/ecopipeline/.bash_profile') as f:
                 lines = f.readlines()
@@ -482,7 +487,7 @@ def main():
         archive_base_directory = '/mnt/PipeArchive/'
         #Which pipe is this running on
         # Makes a different to the EVA settings
-        pipeid = 'ecopipe'
+        evapipeid = 'ecopipe'
      
         # link to github directory with latest pipeline file
         EVA_py_directory= '/home/ecopipeline/PycharmProjects/EVA_Pipeline/'
@@ -545,7 +550,7 @@ def main():
                 total, used, free =shutil.disk_usage(archive_base_directory)
                 diskspace_Free=free/total    
         
-        if site_name=='mrc':
+        if pipe_id=='mrc':
             current_date_for_folder_construction= str(datetime.datetime.now()).split(' ')[0].replace('-','')
             if not os.path.exists(archive_base_directory +'/localptrarchive/sq003ms'):
                 os.umask(0)
@@ -562,7 +567,7 @@ def main():
                 os.makedirs(archive_base_directory +'/localptrarchive/sq101sm/'+current_date_for_folder_construction, mode=0o777)
         
         
-        if site_name=='eco':
+        if pipe_id=='eco':
             current_date_for_folder_construction= str(datetime.datetime.now()).split(' ')[0].replace('-','')
             tomorrows_date_for_folder_construction= str(datetime.datetime.now() + datetime.timedelta(days=1)).split(' ')[0].replace('-','')
             if not os.path.exists(archive_base_directory +'/localptrarchive/ec002cs'):
@@ -611,7 +616,7 @@ def main():
         
         # Here is the testing area for the PIPE communication code
         # CURRENTLY NOT UNDER OPERATION, BUT WE CAN USE IT IN THE FUTURE
-        if False and site_name=='eco' and (time.time()- pipe_queue_timer) > 30:
+        if False and pipe_id=='eco' and (time.time()- pipe_queue_timer) > 30:
             pipe_queue_timer=time.time()
             print ("Checking PIPE QUUEUE")
             #Here check if queue exists and if not, create it.
@@ -660,10 +665,10 @@ def main():
                             token=token,
                             requested_task_content=requested_task_content,
                             processing_temp_directory=processing_temp_directory,
-                            pipeid=pipeid,
+                            pipeid=evapipeid,
                             EVA_py_directory=EVA_py_directory,
                             local_calibrations_directory=local_calibrations_directory,
-                            site_name=site_name
+                            site_name=pipe_id
                         )
                         print("Launched PID:", popen.pid)
                         print("EVA info:", info)
@@ -697,10 +702,10 @@ def main():
                             token=token,
                             requested_task_content=token_contents,
                             processing_temp_directory=processing_temp_directory,
-                            pipeid=pipeid,
+                            pipeid=evapipeid,
                             EVA_py_directory=EVA_py_directory,
                             local_calibrations_directory=local_calibrations_directory,
-                            site_name=site_name
+                            site_name=pipe_id
                         )
                         
                         completed_tokens.append(token)
