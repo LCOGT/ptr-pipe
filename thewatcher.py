@@ -388,7 +388,7 @@ def launch_eva_pipeline(token: str,
         'telescope': parts[0],
         'camera_name': parts[1].split('_')[0],
         'is_osc': 'mono',
-        'pipeid': evapipeid,
+        'pipeid': pipeid,
         'token_temp_directory': token_temp_directory,
         'original_token_file': token,
         'file_location_expected': 'ptrarchive'
@@ -417,7 +417,7 @@ def launch_eva_pipeline(token: str,
         f.write('#!/bin/bash\n')
         if site_name != 'eco':
             f.write('source ~/.bash_profile\n')
-        f.write('/usr/bin/python3 EVApipeline.py na na generic na na na '+str(evapipeid)+' >> log.txt\n')
+        f.write('/usr/bin/python3 EVApipeline.py na na generic na na na '+str(pipeid)+' >> log.txt\n')
     os.chmod(runner_path, 0o755)
     
     popen = subprocess.Popen(
@@ -449,17 +449,17 @@ def main():
     pipe_queue_timer=time.time() - 300
 
     if pipe_id=='arolinux':
-        with open('/home/aropipeline/.bash_profile') as f:
+        with open('/home/mrcpipeline/.bash_profile') as f:
             lines = f.readlines()
         
         archive_base_directory = '/archive'
         
         #Which pipe is this running on
         # Makes a different to the EVA settings
-        evapipeid = 'aropipe'
+        evapipeid = 'arolinux'
      
         # link to github directory with latest pipeline file
-        EVA_py_directory= '/home/aropipeline/Documents/Github/EVA_Pipeline/'
+        EVA_py_directory= '/home/mrcpipeline/Documents/GitHub/EVA_Pipeline/'
         ingester_directory= '/archive/Ingestion/'
         failed_ingestion_directory= '/archive/FailedIngestion/'
         
@@ -500,7 +500,8 @@ def main():
             #print (goog)
             os.environ[goog[0]]=goog[1]  
     except:
-        pass
+        print(traceback.format_exc())
+        breakpoint()
     
     
     processing_temp_directory=archive_base_directory + '/realtime_temp/'
