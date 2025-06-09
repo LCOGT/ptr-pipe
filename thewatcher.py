@@ -50,6 +50,12 @@ total_ram = psutil.virtual_memory().total
 ingester_queue = queue.Queue()
 maximum_parallel_ingestions= 16
 
+# Need to randomly space out parallel ingestions via random delays
+# target total rate (requests per second across all threads)
+TOTAL_RATE = 16.0  
+# so per‐thread rate is:
+RATE_PER_THREAD = TOTAL_RATE / 16.0  # → 1 req/s
+
 # Start worker threads
 # Function to execute ingester items
 def ingester_worker():
@@ -192,10 +198,14 @@ def ingest_item(item):
                 
                 with open(tempfilename, "rb") as fileobj:
                     try:
-                        if not  'thumbnail' in tempfilename:
+                        if not 'thumbnail' in tempfilename:
+                            
                             record=validate_fits_and_create_archive_record(fileobj, file_metadata=headerdict)
+                            time.sleep(random.expovariate(RATE_PER_THREAD))
                             s3_version=upload_file_to_file_store(fileobj, file_metadata=headerdict)
+                            time.sleep(random.expovariate(RATE_PER_THREAD))
                             ingest_archive_record(s3_version,record)
+                            time.sleep(random.expovariate(RATE_PER_THREAD))
                             try:
                                 os.remove(file)
                             except:
