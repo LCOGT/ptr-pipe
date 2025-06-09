@@ -24,7 +24,7 @@ and data ingesting on a PIPE computer
 
 
 import json
-import glob
+#import glob
 import time 
 import traceback
 import datetime
@@ -778,37 +778,41 @@ def main():
         #             completed_tokens.append(token)
         
         monitor_dir = monitor_directories[0]
+        # completed_tokens should be filenames only, e.g. ["aro1_sq003ms_…", …]
         completed = set(completed_tokens)
         
         # find the one oldest file not yet done
         with os.scandir(monitor_dir) as it:
-            # generator of DirEntry objects for files not in completed
             candidates = (
                 entry for entry in it
-                if entry.is_file() and entry.path not in completed
+                if entry.is_file() and entry.name not in completed          # ← use .name here
             )
             try:
                 oldest = min(candidates, key=lambda e: e.stat().st_mtime)
             except ValueError:
-                # no new files
-                oldest = None
+                oldest = None  # no new files
         
-        # wait here until there is enough resources to rationalise sending in a new thing to process
-        wait_for_resources(ingester_directory=ingester_directory,failed_ingestion_directory=failed_ingestion_directory)
+        wait_for_resources(
+            ingester_directory=ingester_directory,
+            failed_ingestion_directory=failed_ingestion_directory
+        )
         
         if oldest:
-            token = oldest.path
+            token_name = oldest.name                                      # ← grab the name
+            token_path = os.path.join(monitor_dir, token_name)
+        
             try:
-                with open(token) as f:
+                with open(token_path) as f:
                     token_contents = json.load(f)
+        
                 if token_contents:
                     print(len(token_contents))
                     print("*************")
-                    print(token)
+                    print(token_name)
                     print(token_contents)
         
                     popen, info = launch_eva_pipeline(
-                        token=token,
+                        token=token_path,
                         requested_task_content=token_contents,
                         processing_temp_directory=processing_temp_directory,
                         pipeid=evapipeid,
@@ -817,13 +821,11 @@ def main():
                         site_name=pipe_id
                     )
         
-                # mark done regardless of contents
-                completed.add(token)
-        
+                completed.add(token_name)                                  # ← add the name, not the path
+                completed_tokens.append(token_name)
             except Exception:
-                print("Bug with this particular token:", token)
+                print("Bug with this particular token:", token_name)
                 traceback.print_exc()
-                completed.add(token)
-                
+                completed.add(token_name)
 if __name__ == "__main__":
     main()
