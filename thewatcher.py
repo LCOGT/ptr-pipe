@@ -738,43 +738,89 @@ def main():
         print ("reading tokens")
         print (datetime.datetime.now())
         
-        # Check there is new stuff in the local directory
-        tokens_in_directory=glob.glob(monitor_directories[0]+ '/*')
-        # If so, chuck them in the queue and keep track of the completed tokens
-        # Queue items: list of filenames, links to calibration frames, telescope, cameraname, filterlist, mono, aropipe
-        for token in tokens_in_directory:
-            wait_for_resources(ingester_directory=ingester_directory,failed_ingestion_directory=failed_ingestion_directory)
-            if not token in completed_tokens:
-                try:
-                    with open(token, 'r') as f:
-                        token_contents = json.load(f)
-                    if len(token_contents) > 0:
+        # # Check there is new stuff in the local directory
+        # tokens_in_directory=glob.glob(monitor_directories[0]+ '/*')
+        # # If so, chuck them in the queue and keep track of the completed tokens
+        # # Queue items: list of filenames, links to calibration frames, telescope, cameraname, filterlist, mono, aropipe
+        # wait_for_resources(ingester_directory=ingester_directory,failed_ingestion_directory=failed_ingestion_directory)
+        # for token in tokens_in_directory:
+            
+        #     if not token in completed_tokens:
+        #         try:
+        #             with open(token, 'r') as f:
+        #                 token_contents = json.load(f)
+        #             if len(token_contents) > 0:
                         
-                        print (len(token_contents))
-                        print ("*************")
-                        print (token)
-                        print (token_contents)                    
+        #                 print (len(token_contents))
+        #                 print ("*************")
+        #                 print (token)
+        #                 print (token_contents)                    
                     
-                        popen, info = launch_eva_pipeline(
-                            token=token,
-                            requested_task_content=token_contents,
-                            processing_temp_directory=processing_temp_directory,
-                            pipeid=evapipeid,
-                            EVA_py_directory=EVA_py_directory,
-                            local_calibrations_directory=local_calibrations_directory,
-                            site_name=pipe_id
-                        )
+        #                 popen, info = launch_eva_pipeline(
+        #                     token=token,
+        #                     requested_task_content=token_contents,
+        #                     processing_temp_directory=processing_temp_directory,
+        #                     pipeid=evapipeid,
+        #                     EVA_py_directory=EVA_py_directory,
+        #                     local_calibrations_directory=local_calibrations_directory,
+        #                     site_name=pipe_id
+        #                 )
                         
-                        completed_tokens.append(token)
-                        break # Only do one token at a time, after each non-zero token go through the activity checker
+        #                 completed_tokens.append(token)
+        #                 break # Only do one token at a time, after each non-zero token go through the activity checker
                         
-                    completed_tokens.append(token)
+        #             completed_tokens.append(token)
                     
-                except:
-                    print ("Bug with this particular token")
-                    print (token)
-                    print(traceback.format_exc())
-                    completed_tokens.append(token)
+        #         except:
+        #             print ("Bug with this particular token")
+        #             print (token)
+        #             print(traceback.format_exc())
+        #             completed_tokens.append(token)
+        
+        monitor_dir = monitor_directories[0]
+        completed = set(completed_tokens)
+        
+        # find the one oldest file not yet done
+        with os.scandir(monitor_dir) as it:
+            # generator of DirEntry objects for files not in completed
+            candidates = (
+                entry for entry in it
+                if entry.is_file() and entry.path not in completed
+            )
+            try:
+                oldest = min(candidates, key=lambda e: e.stat().st_mtime)
+            except ValueError:
+                # no new files
+                oldest = None
+        
+        if oldest:
+            token = oldest.path
+            try:
+                with open(token) as f:
+                    token_contents = json.load(f)
+                if token_contents:
+                    print(len(token_contents))
+                    print("*************")
+                    print(token)
+                    print(token_contents)
+        
+                    popen, info = launch_eva_pipeline(
+                        token=token,
+                        requested_task_content=token_contents,
+                        processing_temp_directory=processing_temp_directory,
+                        pipeid=evapipeid,
+                        EVA_py_directory=EVA_py_directory,
+                        local_calibrations_directory=local_calibrations_directory,
+                        site_name=pipe_id
+                    )
+        
+                # mark done regardless of contents
+                completed.add(token)
+        
+            except Exception:
+                print("Bug with this particular token:", token)
+                traceback.print_exc()
+                completed.add(token)
                 
 if __name__ == "__main__":
     main()
