@@ -793,6 +793,9 @@ def main():
                 # no new files
                 oldest = None
         
+        # wait here until there is enough resources to rationalise sending in a new thing to process
+        wait_for_resources(ingester_directory=ingester_directory,failed_ingestion_directory=failed_ingestion_directory)
+        
         if oldest:
             token = oldest.path
             try:
