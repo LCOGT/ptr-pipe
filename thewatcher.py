@@ -100,34 +100,78 @@ def process_ingester_directory(
         Function that actually performs ingestion; called with [item, ingester_directory, failed_ingestion_directory].
     """
     print("reading ingester directory")
-    pattern = os.path.join(ingester_directory, '*.json')
-    ingester_files_list = glob.glob(pattern)
+    # pattern = os.path.join(ingester_directory, '*.json')
+    # ingester_files_list = glob.glob(pattern)
 
-    for item in ingester_files_list:
+    # for item in ingester_files_list:
+    #     if item in known_ingester_jsons:
+    #         continue
+
+    #     if 'variance_' in os.path.basename(item):
+    #         print(f"removing variance item: {item}")
+    #         try:
+    #             os.remove(item)
+    #         except OSError:
+    #             pass
+    #         # also remove the unpacked version if it exists
+    #         unpacked = item.replace('.json', '')
+    #         try:
+    #             os.remove(unpacked)
+    #         except OSError:
+    #             pass
+    #     else:
+    #         # schedule this new item for ingestion
+    #         add_ingester_item(lambda item=item: ingest_item([item, ingester_directory, failed_ingestion_directory]))
+    #         known_ingester_jsons.append(item)
+    
+    # # Keep known_ingester_jsons tidy now that any known existing files are in the queue
+    # for item in known_ingester_jsons:
+    #     if not item in ingester_files_list:
+    #         known_ingester_jsons.remove(item)
+    
+    # 1) scan for JSONs and get their mtime efficiently
+    entries = [
+        entry
+        for entry in os.scandir(ingester_directory)
+        if entry.name.endswith('.json')
+    ]
+    
+    # 2) sort ascending by mtime → oldest first
+    entries.sort(key=lambda e: e.stat().st_mtime)
+    
+    # 3) only look at the 500 oldest
+    for entry in entries[:500]:
+        item = entry.path
+    
         if item in known_ingester_jsons:
             continue
-
-        if 'variance_' in os.path.basename(item):
+    
+        if 'variance_' in entry.name:
             print(f"removing variance item: {item}")
             try:
                 os.remove(item)
             except OSError:
                 pass
+    
             # also remove the unpacked version if it exists
-            unpacked = item.replace('.json', '')
+            unpacked = item[:-5]  # strip “.json”
             try:
                 os.remove(unpacked)
             except OSError:
                 pass
+    
         else:
             # schedule this new item for ingestion
-            add_ingester_item(lambda item=item: ingest_item([item, ingester_directory, failed_ingestion_directory]))
+            add_ingester_item(lambda item=item: ingest_item([item,
+                                                              ingester_directory,
+                                                              failed_ingestion_directory]))
             known_ingester_jsons.append(item)
     
-    # Keep known_ingester_jsons tidy now that any known existing files are in the queue
-    for item in known_ingester_jsons:
-        if not item in ingester_files_list:
-            known_ingester_jsons.remove(item)
+    # 4) clean up known_ingester_jsons in one go
+    known_ingester_jsons = [
+        item for item in known_ingester_jsons
+        if os.path.exists(item)
+    ]
 
 
 # Function to add ingester items to the queue
