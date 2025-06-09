@@ -168,11 +168,10 @@ def process_ingester_directory(
             known_ingester_jsons.append(item)
     
     # 4) clean up known_ingester_jsons in one go
-    known_ingester_jsons = [
+    known_ingester_jsons[:] = [
         item for item in known_ingester_jsons
         if os.path.exists(item)
     ]
-
 
 # Function to add ingester items to the queue
 def add_ingester_item(item):
