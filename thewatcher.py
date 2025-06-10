@@ -470,6 +470,9 @@ def launch_eva_pipeline(token: str,
         f.write('#!/bin/bash\n')
         if site_name != 'eco':
             f.write('source ~/.bash_profile\n')
+        # get the directory this script lives in, and cd there:
+        f.write('SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"\n')
+        f.write('cd "$SCRIPT_DIR"\n')
         f.write('/usr/bin/python3 EVApipeline.py na na generic na na na '+str(pipeid)+' >> log.txt\n')
     os.chmod(runner_path, 0o755)
     
