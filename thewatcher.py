@@ -56,6 +56,13 @@ TOTAL_RATE = 16.0
 # so per‐thread rate is:
 RATE_PER_THREAD = TOTAL_RATE / 16.0  # → 1 req/s
 
+# When we start up, for for the first little while, you do NOT want
+# A thousand tokens to simulataneously start. So for the first half hour,
+# we drip them in a minute at a time. 
+startuptime=time.time()
+
+
+
 # Start worker threads
 # Function to execute ingester items
 def ingester_worker():
@@ -484,6 +491,13 @@ def launch_eva_pipeline(token: str,
         preexec_fn=preexec_limit,     
         start_new_session=True       
     )
+    
+    if (time.time() - startuptime) < 1800:
+        time.sleep(60)
+    elif (time.time() - startuptime) < 3600:
+        time.sleep(30)
+    elif (time.time() - startuptime) < 7800: # speed it up in the second half hour
+        time.sleep(10)
 
     return popen, info_for_EVA
 
@@ -823,6 +837,9 @@ def main():
                         local_calibrations_directory=local_calibrations_directory,
                         site_name=pipe_id
                     )
+                    
+                    
+                    
         
                 completed.add(token_name)                                  # ← add the name, not the path
                 completed_tokens.append(token_name)
@@ -830,5 +847,6 @@ def main():
                 print("Bug with this particular token:", token_name)
                 traceback.print_exc()
                 completed.add(token_name)
+                
 if __name__ == "__main__":
     main()
