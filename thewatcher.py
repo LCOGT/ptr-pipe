@@ -578,6 +578,14 @@ def main():
     
     
     processing_temp_directory=archive_base_directory + '/realtime_temp/'
+    
+    if os.path.isdir(processing_temp_directory):
+        try:
+            # remove entire tree…
+            shutil.rmtree(processing_temp_directory)
+        except Exception as e:
+            print(f"Warning: could not rmtree {processing_temp_directory}: {e}")
+    
     local_calibrations_directory=archive_base_directory + '/localptrarchive/calibrations/'
     
     # Base paths
