@@ -521,6 +521,9 @@ def main():
 
     pipe_queue_timer=time.time() - 300
 
+    cpu_frac = config['cpu_threshold']
+    mem_frac = config['memory_threshold']
+
     if pipe_id=='arolinux':
         with open('/home/mrcpipeline/.bash_profile') as f:
             lines = f.readlines()
@@ -819,7 +822,7 @@ def main():
         
         wait_for_resources(
             ingester_directory=ingester_directory,
-            failed_ingestion_directory=failed_ingestion_directory
+            failed_ingestion_directory=failed_ingestion_directory, cpu_fraction=cpu_frac, memory_fraction=mem_frac
         )
         
         if oldest:
