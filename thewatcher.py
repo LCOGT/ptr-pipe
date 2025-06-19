@@ -337,7 +337,7 @@ def ingest_item(item):
     except:
         print(traceback.format_exc())
     
-def wait_for_resources(memory_fraction=40, cpu_fraction=40, wait_for_harddrive=False, workdrive='none', ingester_directory='none',failed_ingestion_directory='none'):
+def wait_for_resources(memory_fraction=40, cpu_fraction=40, wait_for_harddrive=False, workdrive='none', ingester_directory='none',failed_ingestion_directory='none', ingest_to_ptrarchive=False):
     
     # A delaying mechanism that will random push itself forward in the future
     # but at some point... the show must go on! So it will release itself. 
@@ -363,7 +363,8 @@ def wait_for_resources(memory_fraction=40, cpu_fraction=40, wait_for_harddrive=F
                 vert_timer=time.time()
                 # We want to still be ingesting stuff while we are waiting!
                 try:
-                    process_ingester_directory(ingester_directory,failed_ingestion_directory)
+                    if ingest_to_ptrarchive:
+                        process_ingester_directory(ingester_directory,failed_ingestion_directory)
                 except:
                     print ("Failed ingester directory")
             time.sleep(1)
@@ -380,7 +381,8 @@ def wait_for_resources(memory_fraction=40, cpu_fraction=40, wait_for_harddrive=F
                 print('Waiting: Mem: ' + str(memory_usage) + ' CPU: '+ str(cpu_usage)+ " " + str(datetime.datetime.now()))
                 # We want to still be ingesting stuff while we are waiting!
                 try:
-                    process_ingester_directory(ingester_directory,failed_ingestion_directory)
+                    if ingest_to_ptrarchive:
+                        process_ingester_directory(ingester_directory,failed_ingestion_directory)
                 except:
                     print ("Failed ingester directory")
                 vert_timer=time.time()
@@ -769,8 +771,12 @@ def main():
             except:
                 print ("Hit a snag somewhere? ")
                 print(traceback.format_exc())
-                                
-        process_ingester_directory(ingester_directory,failed_ingestion_directory)
+                
+        try:    
+            if config["ingest_to_ptrarchive"]:                    
+                process_ingester_directory(ingester_directory,failed_ingestion_directory)
+        except:
+            print ("Failed ingester directory")
         
         print ("reading tokens")
         print (datetime.datetime.now())
@@ -779,7 +785,7 @@ def main():
         # tokens_in_directory=glob.glob(monitor_directories[0]+ '/*')
         # # If so, chuck them in the queue and keep track of the completed tokens
         # # Queue items: list of filenames, links to calibration frames, telescope, cameraname, filterlist, mono, aropipe
-        # wait_for_resources(ingester_directory=ingester_directory,failed_ingestion_directory=failed_ingestion_directory)
+        # wait_for_resources(ingester_directory=ingester_directory,failed_ingestion_directory=failed_ingestion_directory, ingest_to_ptrarchive=config["ingest_to_ptrarchive"])
         # for token in tokens_in_directory:
             
         #     if not token in completed_tokens:
@@ -831,7 +837,7 @@ def main():
         
         wait_for_resources(
             ingester_directory=ingester_directory,
-            failed_ingestion_directory=failed_ingestion_directory, cpu_fraction=cpu_frac, memory_fraction=mem_frac
+            failed_ingestion_directory=failed_ingestion_directory, cpu_fraction=cpu_frac, memory_fraction=mem_frac, ingest_to_ptrarchive=config["ingest_to_ptrarchive"]
         )
         
         if oldest:
