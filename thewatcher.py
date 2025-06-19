@@ -586,7 +586,7 @@ def main():
             os.environ[goog[0]]=goog[1]  
     except:
         print(traceback.format_exc())
-        breakpoint()
+        #breakpoint()
     
     
     processing_temp_directory=archive_base_directory + '/realtime_temp/'
