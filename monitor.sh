@@ -4,7 +4,7 @@
 
 #PROJECT_DIR="/home/ecopipeline/PycharmProjects/ptr-pipe"
 #WRAPPER="$PROJECT_DIR/run_watcher.sh"
-WRAPPER="run_watcher.sh"
+WRAPPER="./run_watcher.sh"
 SCRIPT_PATTERN="thewatcher.py"
 CHECK_INTERVAL=30
 
@@ -14,7 +14,6 @@ start_watcher() {
   echo "$(date +'%F %T') ▶ Starting watcher…"
   xfce4-terminal \
     --title="thewatcher.py" \
-#    --working-directory="$PROJECT_DIR" \
     --hold \
     --command "bash -lc '$WRAPPER'"
 }
