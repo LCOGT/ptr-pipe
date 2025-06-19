@@ -76,11 +76,10 @@ def ingester_worker():
             print(f"Ingesting item raised an exception: {e}")
         finally:
             ingester_queue.task_done()
-def start_worker_threads():
+def start_ptringester_worker_threads():
     for _ in range(maximum_parallel_ingestions):
         threading.Thread(target=ingester_worker, daemon=True).start()
-# Start workers
-start_worker_threads()
+
 
 
 known_ingester_jsons=[]
@@ -523,6 +522,10 @@ def main():
 
     cpu_frac = config['cpu_threshold']
     mem_frac = config['memory_threshold']
+    
+    if config["ingest_to_ptrarchive"]:
+        # Start workers
+        start_ptringester_worker_threads()
 
     if pipe_id=='arolinux':
         with open('/home/mrcpipeline/.bash_profile') as f:
