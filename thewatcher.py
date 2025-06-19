@@ -362,7 +362,10 @@ def wait_for_resources(memory_fraction=40, cpu_fraction=40, wait_for_harddrive=F
                 print('Waiting: Mem: ' + str(memory_usage) + ' CPU: '+ str(cpu_usage) + "HD: "+str(hard_drive_usage) + " " + str(datetime.datetime.now()))
                 vert_timer=time.time()
                 # We want to still be ingesting stuff while we are waiting!
-                process_ingester_directory(ingester_directory,failed_ingestion_directory)
+                try:
+                    process_ingester_directory(ingester_directory,failed_ingestion_directory)
+                except:
+                    print ("Failed ingester directory")
             time.sleep(1)
             cpu_usage=psutil.cpu_percent(interval=1)
             memory_usage=psutil.virtual_memory().percent
@@ -376,7 +379,10 @@ def wait_for_resources(memory_fraction=40, cpu_fraction=40, wait_for_harddrive=F
             if time.time()-vert_timer > 30:
                 print('Waiting: Mem: ' + str(memory_usage) + ' CPU: '+ str(cpu_usage)+ " " + str(datetime.datetime.now()))
                 # We want to still be ingesting stuff while we are waiting!
-                process_ingester_directory(ingester_directory,failed_ingestion_directory)
+                try:
+                    process_ingester_directory(ingester_directory,failed_ingestion_directory)
+                except:
+                    print ("Failed ingester directory")
                 vert_timer=time.time()
             time.sleep(1)
             cpu_usage=psutil.cpu_percent(interval=1)
