@@ -22,7 +22,7 @@ and data ingesting on a PIPE computer
 
 # But you must also set samba to only consider local network drives.
 
-
+import sys
 import json
 #import glob
 import time 
@@ -518,9 +518,28 @@ def main():
 
     # site_name=files[0].split('_')[-1]
 
-    script_dir = os.path.dirname(os.path.abspath(__file__))  
+    # 1) Location next to this .py file
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     config_path = os.path.join(script_dir, 'config.json')
     
+    # 2) If missing, try the cwd instead
+    if not os.path.isfile(config_path):
+        alt = os.path.join(os.getcwd(), 'config.json')
+        if os.path.isfile(alt):
+            config_path = alt
+        else:
+            sys.stderr.write(
+                f"❌ config.json not found in either:\n"
+                f"   • {script_dir}\n"
+                f"   • {os.getcwd()}\n"
+            )
+            sys.exit(1)
+    
+    print(f"Loading configuration from: {config_path}", file=sys.stderr)
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+        
+        
     with open(config_path, 'r') as f:
         config = json.load(f)
     
