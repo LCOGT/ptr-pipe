@@ -14,5 +14,9 @@
 # source ~/.bash_profile
 # source .env
 
+PIDFILE="thewatcher.pid"  
+
+echo $$ > "$PIDFILE"
+
 # Exec the watcher by absolute path (just to be extra safe):
 exec python3 thewatcher.py
