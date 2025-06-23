@@ -565,6 +565,7 @@ def main():
         evapipeid = 'arolinux'
      
         workdrive = 'sdb'   
+        wait_for_harddrive=True
      
         # link to github directory with latest pipeline file
         EVA_py_directory= '/home/mrcpipeline/Documents/GitHub/EVA_Pipeline/'
@@ -581,6 +582,7 @@ def main():
         evapipeid = 'mrcpipe'
         
         workdrive = 'sda' 
+        wait_for_harddrive=True
      
         # link to github directory with latest pipeline file
         EVA_py_directory= '/home/mrcpipeline/PycharmProjects/EVA_Pipeline/'
@@ -600,6 +602,7 @@ def main():
         evapipeid = 'ecopipe'
      
         workdrive = 'md0'
+        wait_for_harddrive=True
      
         # link to github directory with latest pipeline file
         EVA_py_directory= '/home/ecopipeline/PycharmProjects/EVA_Pipeline/'
@@ -862,7 +865,7 @@ def main():
         
         wait_for_resources(
             ingester_directory=ingester_directory,
-            failed_ingestion_directory=failed_ingestion_directory, wait_for_harddrive=True, cpu_fraction=cpu_frac, memory_fraction=mem_frac, ingest_to_ptrarchive=config["ingest_to_ptrarchive"], workdrive=workdrive
+            failed_ingestion_directory=failed_ingestion_directory, wait_for_harddrive=wait_for_harddrive, cpu_fraction=cpu_frac, memory_fraction=mem_frac, ingest_to_ptrarchive=config["ingest_to_ptrarchive"], workdrive=workdrive
         )
         
         if oldest:
