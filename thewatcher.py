@@ -356,7 +356,7 @@ def wait_for_resources(memory_fraction=40, cpu_fraction=40, wait_for_harddrive=F
         hard_drive_usage=hard_drive_activity(workdrive)
         
         
-        while memory_usage > memory_fraction or cpu_usage > cpu_fraction and (time.time()-file_wait_timeout_timer < random_timeout_period) and hard_drive_usage > 10000:       
+        while ((memory_usage > memory_fraction) or (cpu_usage > cpu_fraction) or hard_drive_usage > 10000) and (time.time()-file_wait_timeout_timer < random_timeout_period) :       
             
             if time.time()-vert_timer > 30:
                 print('Waiting: Mem: ' + str(memory_usage) + ' CPU: '+ str(cpu_usage) + "HD: "+str(hard_drive_usage) + " " + str(datetime.datetime.now()))
@@ -375,7 +375,7 @@ def wait_for_resources(memory_fraction=40, cpu_fraction=40, wait_for_harddrive=F
     else:
         cpu_usage=psutil.cpu_percent(interval=1)
         memory_usage=psutil.virtual_memory().percent
-        while memory_usage > memory_fraction or cpu_usage > cpu_fraction and (time.time()-file_wait_timeout_timer < random_timeout_period):       
+        while (memory_usage > memory_fraction or cpu_usage > cpu_fraction) and (time.time()-file_wait_timeout_timer < random_timeout_period):       
             
             if time.time()-vert_timer > 30:
                 print('Waiting: Mem: ' + str(memory_usage) + ' CPU: '+ str(cpu_usage)+ " " + str(datetime.datetime.now()))
