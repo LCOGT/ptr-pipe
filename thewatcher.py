@@ -862,7 +862,7 @@ def main():
         
         wait_for_resources(
             ingester_directory=ingester_directory,
-            failed_ingestion_directory=failed_ingestion_directory, cpu_fraction=cpu_frac, memory_fraction=mem_frac, ingest_to_ptrarchive=config["ingest_to_ptrarchive"], workdrive=workdrive
+            failed_ingestion_directory=failed_ingestion_directory, wait_for_harddrive=True, cpu_fraction=cpu_frac, memory_fraction=mem_frac, ingest_to_ptrarchive=config["ingest_to_ptrarchive"], workdrive=workdrive
         )
         
         if oldest:
