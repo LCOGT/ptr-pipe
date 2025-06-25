@@ -61,7 +61,15 @@ RATE_PER_THREAD = TOTAL_RATE / 16.0  # → 1 req/s
 # we drip them in a minute at a time. 
 startuptime=time.time()
 
+HEARTBEAT = "thewatcher.hbeat"
 
+def touch_heartbeat():
+    # create or update the timestamp
+    with open(HEARTBEAT, "a"):
+        os.utime(HEARTBEAT, None)
+    
+    with open("watcher.log", "a") as f:
+        f.write(f"[{datetime.datetime.now():%Y-%m-%d %H:%M:%S}] loop complete\n")
 
 # Start worker threads
 # Function to execute ingester items
@@ -372,6 +380,8 @@ def wait_for_resources(memory_fraction=40, cpu_fraction=40, wait_for_harddrive=F
             memory_usage=psutil.virtual_memory().percent
             hard_drive_usage=hard_drive_activity(workdrive)
             
+            touch_heartbeat()
+            
     else:
         cpu_usage=psutil.cpu_percent(interval=1)
         memory_usage=psutil.virtual_memory().percent
@@ -389,6 +399,7 @@ def wait_for_resources(memory_fraction=40, cpu_fraction=40, wait_for_harddrive=F
             time.sleep(1)
             cpu_usage=psutil.cpu_percent(interval=1)
             memory_usage=psutil.virtual_memory().percent
+            touch_heartbeat()
 
 def hard_drive_activity(drive):
     output = subprocess.check_output(["iostat","-y" ,"5","1","|","grep",drive])#, shell=True)
@@ -510,6 +521,8 @@ def launch_eva_pipeline(token: str,
     return popen, info_for_EVA
 
 def main():
+
+    touch_heartbeat()    
 
     # Expand '~' to the user's home directory
     # home_directory = os.path.expanduser("~")
@@ -809,6 +822,7 @@ def main():
         
         print ("reading tokens")
         print (datetime.datetime.now())
+        touch_heartbeat()
         
         # # Check there is new stuff in the local directory
         # tokens_in_directory=glob.glob(monitor_directories[0]+ '/*')
