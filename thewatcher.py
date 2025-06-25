@@ -456,8 +456,8 @@ def launch_eva_pipeline(token: str,
         'camera_name': parts[1].split('_')[0],
         'is_osc': 'mono',
         'pipeid': pipeid,
-        'token_temp_directory': token_temp_directory,
-        'original_token_file': token,
+        'token_temp_directory': str(token_temp_directory).replace('//','/'),
+        'original_token_file': str(token).replace('//','/'),
         'file_location_expected': 'ptrarchive'
     }
 
@@ -489,6 +489,7 @@ def launch_eva_pipeline(token: str,
         f.write('cd "$SCRIPT_DIR"\n')
         f.write('/usr/bin/python3 EVApipeline.py na na generic na na na '+str(pipeid)+' >> log.txt\n')
     os.chmod(runner_path, 0o755)
+    
     
     popen = subprocess.Popen(
         ["/bin/bash", runner_path],
