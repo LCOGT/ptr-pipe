@@ -36,7 +36,7 @@ import random
 from dotenv import load_dotenv
 env=load_dotenv(".env")
 import resource
-
+from json.decoder import JSONDecodeError
 import requests
 from ocs_ingester.ingester import  validate_fits_and_create_archive_record, upload_file_to_file_store, ingest_archive_record
 
@@ -425,7 +425,7 @@ def hard_drive_activity(drive):
     output = str(output).split(drive)[-1].split(' ')
     while("" in output):
          output.remove("")
-    print ("Hard Drive activity at " + str(drive) + " : " + str(float(output[2])))
+    #print ("Hard Drive activity at " + str(drive) + " : " + str(float(output[2])))
     return float(output[2])
      
 def find_and_delete_oldest_file(directory):
@@ -471,8 +471,14 @@ def launch_eva_pipeline(token: str,
     # Build & clean temp dir
     token_temp_directory = os.path.join(processing_temp_directory, token.split('/')[-1])
     if os.path.isdir(token_temp_directory):
-        shutil.rmtree(token_temp_directory)
-    os.makedirs(token_temp_directory, mode=0o777, exist_ok=True)
+        try:
+            shutil.rmtree(token_temp_directory, ignore_errors=True)
+        except:
+            pass
+    try:
+        os.makedirs(token_temp_directory, mode=0o777, exist_ok=True)
+    except:
+        pass
 
     # Build info dict
     first_file = requested_task_content[0]
@@ -910,34 +916,71 @@ def main():
             token_path = os.path.join(monitor_dir, token_name)
         
             try:
-                with open(token_path) as f:
-                    token_contents = json.load(f)
+               # first, guard against an empty file
+               if os.path.getsize(token_path) == 0:
+                   print(f"Empty token file {token_name}, deleting.")
+                   os.remove(token_path)
+                   continue
         
-                if token_contents:
-                    print(len(token_contents))
-                    print("*************")
-                    print(token_name)
-                    print(token_contents)
+               with open(token_path) as f:
+                   token_contents = json.load(f)
         
-                    popen, info = launch_eva_pipeline(
-                        token=token_path,
-                        requested_task_content=token_contents,
-                        processing_temp_directory=processing_temp_directory,
-                        pipeid=evapipeid,
-                        EVA_py_directory=EVA_py_directory,
-                        local_calibrations_directory=local_calibrations_directory,
-                        site_name=pipe_id
-                    )
-                    
-                    
-                    
-        
-                completed.add(token_name)                                  # ← add the name, not the path
-                completed_tokens.append(token_name)
+            except JSONDecodeError as e:
+                print(f"⚠️ JSONDecodeError for {token_name}: {e}. Deleting and skipping.")
+                os.remove(token_path)
+                continue
+             
             except Exception:
-                print("Bug with this particular token:", token_name)
+                # any other error you might still want to log and skip
+                print(f"🔴 Unexpected error for {token_name}:")
                 traceback.print_exc()
-                completed.add(token_name)
+                os.remove(token_path)
+                continue
+             
+            # — if we get here, token_contents is valid —
+            print(len(token_contents), "entries in", token_name)
+            popen, info = launch_eva_pipeline(
+                token=token_path,
+                requested_task_content=token_contents,
+                processing_temp_directory=processing_temp_directory,
+                pipeid=evapipeid,
+                EVA_py_directory=EVA_py_directory,
+                local_calibrations_directory=local_calibrations_directory,
+                site_name=pipe_id
+            )
+             
+            completed.add(token_name)
+            completed_tokens.append(token_name)
+             
+            # try:
+            #     with open(token_path) as f:
+            #         token_contents = json.load(f)
+        
+            #     if token_contents:
+            #         print(len(token_contents))
+            #         print("*************")
+            #         print(token_name)
+            #         print(token_contents)
+        
+            #         popen, info = launch_eva_pipeline(
+            #             token=token_path,
+            #             requested_task_content=token_contents,
+            #             processing_temp_directory=processing_temp_directory,
+            #             pipeid=evapipeid,
+            #             EVA_py_directory=EVA_py_directory,
+            #             local_calibrations_directory=local_calibrations_directory,
+            #             site_name=pipe_id
+            #         )
+                    
+                    
+                    
+        
+            #     completed.add(token_name)                                  # ← add the name, not the path
+            #     completed_tokens.append(token_name)
+            # except Exception:
+            #     print("Bug with this particular token:", token_name)
+            #     traceback.print_exc()
+            #     completed.add(token_name)
                 
 if __name__ == "__main__":
     main()

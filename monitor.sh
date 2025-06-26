@@ -22,12 +22,30 @@ start_watcher() {
   sleep 2  # give watcher time to write PID, heartbeat, and first log entry
 }
 
+
 restart_watcher() {
   echo "$(date +'%F %T') ⚠ Restarting watcher…"
+
+  # 1) kill the Python watcher
   [[ -f $PIDFILE ]] && kill "$(cat "$PIDFILE")" 2>/dev/null || true
+
+  # 2) kill any stale terminal windows titled "thewatcher.py"
+  pgrep -f "xfce4-terminal.*--title=thewatcher.py" \
+    | xargs -r kill
+
+  # 3) clean up state files
   rm -f "$PIDFILE" "$HEARTBEAT"
+
+  # 4) launch a brand-new window + watcher
   start_watcher
 }
+
+#restart_watcher() {
+#  echo "$(date +'%F %T') ⚠ Restarting watcher…"
+#  [[ -f $PIDFILE ]] && kill "$(cat "$PIDFILE")" 2>/dev/null || true
+#  rm -f "$PIDFILE" "$HEARTBEAT"
+#  start_watcher
+#}
 
 check_pid() {
   [[ -f $PIDFILE ]] || { echo "   → PID file missing"; return 1; }
