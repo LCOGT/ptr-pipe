@@ -42,6 +42,7 @@ from ocs_ingester.ingester import  validate_fits_and_create_archive_record, uplo
 
 import threading
 import queue
+import errno
 
 # Nobody gonna be changing RAM while the computer is running, so this is global
 total_ram = psutil.virtual_memory().total
@@ -60,6 +61,24 @@ RATE_PER_THREAD = TOTAL_RATE / 16.0  # → 1 req/s
 # A thousand tokens to simulataneously start. So for the first half hour,
 # we drip them in a minute at a time. 
 startuptime=time.time()
+
+
+def reap_zombies():
+    """
+    Reap any exited child processes so they don’t become zombies.
+    """
+    try:
+        # -1 means “any child”; WNOHANG means “don’t block”
+        while True:
+            pid, status = os.waitpid(-1, os.WNOHANG)
+            if pid == 0:
+                break
+    except ChildProcessError:
+        # no child processes at all
+        pass
+    except OSError as e:
+        if e.errno != errno.ECHILD:
+            raise
 
 HEARTBEAT = "thewatcher.hbeat"
 
@@ -823,6 +842,9 @@ def main():
         print ("reading tokens")
         print (datetime.datetime.now())
         touch_heartbeat()
+        
+        # reap any finished EVApipeline subprocesses
+        reap_zombies()
         
         # # Check there is new stuff in the local directory
         # tokens_in_directory=glob.glob(monitor_directories[0]+ '/*')
