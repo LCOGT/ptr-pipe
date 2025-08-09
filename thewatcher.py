@@ -588,7 +588,7 @@ def main():
 
     cpu_frac = config['cpu_threshold']
     mem_frac = config['memory_threshold']
-    
+    #breakpoint()
     if config["ingest_to_ptrarchive"]:
         # Start workers
         start_ptringester_worker_threads()
